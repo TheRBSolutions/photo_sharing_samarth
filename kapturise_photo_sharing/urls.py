@@ -24,6 +24,7 @@ urlpatterns = [
     path('', lambda request: redirect('login'), name='home'),
     path('admin/', admin.site.urls),
      path('', include('app.urls')),
+     path('qr/', include('qr_code.urls', namespace='qr_code')),
 ]
 
 

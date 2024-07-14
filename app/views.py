@@ -1,4 +1,5 @@
 # gallery/views.py
+# pylint: disable=no-member
 import io
 import json
 import os
@@ -99,7 +100,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 def photographer_dashboard(request):
     if request.user.is_authenticated:
         # Fetch all albums for the logged-in photographer
-        albums = Album.objects.filter(photographer=request.user)
+        albums = Album.objects.filter(photographer=request.user) # pylint: disable=no-member
         return render(request, "app/photographer_dashboard.html", {"albums": albums})
     else:
         return redirect("login")  # Redirect to login if user is not authenticated
@@ -682,42 +683,3 @@ def business_settings(request):
         form = BusinessSettingsForm(instance=business)
 
     return render(request, "app/business_settings.html", {"form": form})
-
-
-import qrcode
-from django.http import HttpResponse
-
-
-def generate_qr_code(request, album_id):
-    album = get_object_or_404(Album, id=album_id)
-    user_profile = get_object_or_404(Profile, user=request.user)
-
-    # Create QR code
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-
-    # URL or text to encode in the QR code
-
-    qr_data = f"https://samarth1011.pythonanywhere.com/album/{album_id}/upload_selfie/"
-    qr.add_data(qr_data)
-    qr.make(fit=True)
-
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffer = io.BytesIO()
-    img.save(buffer, format="PNG")
-    buffer.seek(0)
-
-    return HttpResponse(buffer, content_type="image/png")
-
-
-def print_qr_card(request, album_id):
-    album = get_object_or_404(Album, id=album_id)
-    user_profile = get_object_or_404(Profile, user=request.user)
-
-    return render(
-        request, "app/print_qr_card.html", {"album": album, "profile": user_profile}
-    )
