@@ -2,7 +2,7 @@ import qrcode
 import io
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-from app.models import Album, Profile  # Import Album from the original app
+from app.models import Album, Profile ,Business # Import Album from the original app
 
 def generate_qr_code(request, album_id):
     album = get_object_or_404(Album, id=album_id)
@@ -24,6 +24,7 @@ def generate_qr_code(request, album_id):
 def print_qr_card(request, album_id):
     album = get_object_or_404(Album, id=album_id)
     user_profile = get_object_or_404(Profile, user=request.user)
+    business = get_object_or_404(Business, user=album.photographer)
     return render(
-        request, "qr_code/print_qr_card.html", {"album": album, "profile": user_profile}
+        request, "qr_code/print_qr_card.html", {"album": album, "profile": user_profile, "business": business}
     )

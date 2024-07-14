@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
 <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 
-   <style>
+<style>
     .cover-image {
         width: 100%;
         height: 400px;
@@ -105,7 +105,6 @@
         font-size: 14px;
         font-weight: 700;
     }
-
     .dropzone {
         border: 2px dashed #007bff;
         border-radius: 5px;
@@ -152,18 +151,15 @@
         display: none;
         margin: 20px auto;
     }
-
     #imageDetailsModal img {
-    width: 100%;
-    height: auto;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-#imageDetailsModal .form-group {
-    margin-bottom: 15px;
-}
-
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    #imageDetailsModal .form-group {
+        margin-bottom: 15px;
+    }
 </style>
 
 <div class="page-wrapper">
@@ -175,21 +171,21 @@
                     </div>
                     <div class="profile-top">
                         <div class="profile-content">
-                            <div class="profile-contentimg" style=" height: 120px; object-fit: cover;">
+                            <div class="profile-contentimg" style="height: 120px; object-fit: cover;">
                                 <img src="{{ business.logo.url }}" style="height: 120px;" alt="Business Logo" id="blah">
                                 <div class="profileupload"></div>
                             </div>
                             <div class="profile-contentname">
-                                <h2>{{ album.title}}</h2>
-                                <p>{{ album.description}}</p>
+                                <h2>{{ album.title }}</h2>
+                                <p>{{ album.description }}</p>
                             </div>
                         </div>
                         <div class="ms-auto">
                             <button class="btn btn-options-set" id="uploadBtn"><i class="fas fa-upload"></i> Upload</button>
                             <button class="btn btn-options-set"><i class="fas fa-download"></i> Download</button>
                             <button class="btn btn-options-set" onclick="copyLink()"><i class="fas fa-share-alt"></i> Share</button>
-                            <button class="btn btn-options-set"  id="printQRbtn" ><i class="fas fa-qrcode"></i> Print QR</button>
-                            <a class="btn btn-options-set" href="{% url 'album_settings' album.id %}"><i class="fas fa-gear"></i> Settings</a>                    
+                            <button class="btn btn-options-set" id="printQRbtn"><i class="fas fa-qrcode"></i> Print QR</button>
+                            <a class="btn btn-options-set" href="{% url 'album_settings' album.id %}"><i class="fas fa-gear"></i> Settings</a>
                         </div>
                     </div>
                 </div>
@@ -219,7 +215,6 @@
                                                 <a href="{{ url }}" download class="download-icon"><i class="fas fa-download"></i></a>
                                                 <span class="delete-icon" onclick="deleteImage('{{ url }}')"><i class="fas fa-trash"></i></span>
                                                 <div class="check-product"><i class="fa fa-check"></i></div>
-                                                <!-- <div class="check-product" onclick="deleteImage('{{ url }}')"><i class="fa fa-trash"></i></div> -->
                                             </div>
                                         </div>
                                     </div>
@@ -257,7 +252,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-primary" id="saveChangesBtn">Save Changes</button>
-                    <a type="button"id="downloadImageBtn" class="btn btn-sm btn-primary" download>Download Image</a>
+                    <a type="button" id="downloadImageBtn" class="btn btn-sm btn-primary" download>Download Image</a>
                     <button type="button" class="btn btn-sm btn-primary" id="deleteImageBtn">Delete Image</button>
                 </div>
             </div>
@@ -280,7 +275,7 @@
                         <p class="card-text lead font-weight-bold text-warning">GET YOUR OWN PHOTOS!</p>
                         <p class="card-text">from this event instantly using face recognition.</p>
                         <p class="card-text">Scan this code, click a selfie.</p>
-                        <img src="{% url 'generate_qr_code' album.id %}" alt="QR Code" class="img-fluid mx-auto d-block" style="max-width: 200px; margin-bottom: 20px;">
+                        <img src="{% url 'qr_code:generate' album.id %}" alt="QR Code" class="img-fluid mx-auto d-block" style="max-width: 200px; margin-bottom: 20px;">
                         <div class="d-flex align-items-center justify-content-center mb-4">
                             <img src="{{business.logo.url}}" alt="Business Logo" class="img-fluid" style="max-width: 50px; height: 25px; margin-right: 10px;">
                             <p class="card-text mb-0">{{ business.name }}</p>
@@ -296,6 +291,7 @@
         </div>
     </div>
 </div>
+
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -339,17 +335,16 @@
                 <div id="uploadStatus"></div>
                 <div class="progress-container">
                     <div class="progress-bar"></div>
-                    <div class="progress-text">0%</div>
+                    <div class="progress-text">0%</</div>
                 </div>
                 <div class="spinner-border text-primary" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>
-            <button id="submit-all-button"  style="display: none;">Submit All</button>
+            <button id="submit-all-button" style="display: none;">Submit All</button>
         </div>
     </div>
 </div>
-
 
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
@@ -368,11 +363,14 @@
         $('#uploadBtn').click(function () {
             $('#uploadModal').modal('show');
         });
-    });
+
         $('#printQRbtn').click(function () {
             $('#printQRModal').modal('show');
         });
-       
+
+        document.getElementById('downloadQrCardBtn').addEventListener('click', function() {
+            window.location.href = "{% url 'qr_code:print' album.id %}";
+        });
 
         function getCookie(name) {
             var cookieValue = null;
@@ -516,7 +514,6 @@
         });
 
         function copyLink() {
-            
             const albumId = '{{ album_id }}';
             const url = `${window.location.origin}/album/${albumId}/upload_selfie/`;
             const dummy = document.createElement('textarea');
@@ -527,11 +524,6 @@
             document.body.removeChild(dummy);
             alert('Link copied to clipboard: ' + url);
         }
-
-       
- 
 </script>
-      
-
 
 {% endblock content %}

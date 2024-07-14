@@ -41,8 +41,7 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(template_name="app/password_reset_done.html"), 
         name="password_reset_complete"),
     
-    path('generate_qr_code/<int:album_id>/', views.generate_qr_code, name='generate_qr_code'),
-    path('print_qr_card/<int:album_id>/', views.print_qr_card, name='print_qr_card'),
+    
     
      path('upload-images/<int:album_id>/', views.upload_images, name='upload_images'),
 ]
