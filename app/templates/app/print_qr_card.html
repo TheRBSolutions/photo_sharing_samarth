@@ -1,0 +1,21 @@
+{% extends 'app/app.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>Print QR Card</h2>
+    <div class="card text-center">
+        <div class="card-body">
+            <h5 class="card-title">{{ album.title }}</h5>
+            <p class="card-text">GET YOUR OWN PHOTOS from this event instantly using face recognition. Scan this code, click a selfie.</p>
+            <img src="{% url 'generate_qr_code' album.id %}" alt="QR Code" class="img-fluid" style="max-width: 200px;">
+            <img src="{% static 'path/to/business-logo.png' %}" alt="Business Logo" class="img-fluid" style="max-width: 100px;">
+            <p class="card-text">{{ profile.business_name }}</p>
+            <p class="card-text">Technology by Kapturise</p>
+        </div>
+    </div>
+    <div class="mt-3">
+        <a href="{% url 'generate_qr_code' album.id %}" download="QRCard.png" class="btn btn-primary">Download QR Card</a>
+    </div>
+</div>
+{% endblock content %}

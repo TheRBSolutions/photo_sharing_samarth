@@ -1,0 +1,77 @@
+<!-- templates/app/photographer_settings.html -->
+
+{% extends 'app/app.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+        {% load static %}
+
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Profile</h4>
+                <h6>User Profile</h6>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="profile-set">
+                    <div class="profile-head">
+                    </div>
+                    <div class="profile-top">
+                        <div class="profile-content">
+                            <div class="profile-contentimg">
+                                <img src="{% static 'assets/img/customer/customer5.jpg' %}" alt="img" id="blah">
+                                <div class="profileupload">
+                                    <input type="file" id="imgInp">
+                                    <a href="javascript:void(0);"><img src="{% static 'assets/img/icons/edit-set.svg' %}" alt="img"></a>
+                                </div>
+                            </div>
+                            <div class="profile-contentname">
+                                <h2>{{form.username.value}}</h2>
+                                <h4>Updates Your Photo and Personal Details.</h4>
+                            </div>
+                        </div>
+                       
+                    </div>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="{{ form.username.id_for_label }}">User Name</label>
+                                {{ form.username }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="{{ form.email.id_for_label }}">Email</label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="{{ form.password1.id_for_label }}">Password</label>
+                                {{ form.password1 }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                                {{ form.password2 }}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-submit me-2">Submit</button>
+                            <a href="javascript:void(0);" class="btn btn-cancel">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

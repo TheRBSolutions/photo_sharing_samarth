@@ -1,0 +1,88 @@
+<!-- templates/app/business_settings.html -->
+
+{% extends 'app/app.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="content">
+
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Business Profile</h4>
+                <h6>Business Settings</h6>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <div class="profile-set">
+                    <div class="profile-head">
+                    </div>
+                    <div class="profile-top">
+                        <div class="profile-content">
+                            <div class="profile-contentimg">
+                                <img src="{{ form.instance.logo.url }}" alt="Business Logo" id="blah">
+                                <div class="profileupload">
+                                    
+                                    <!-- <a href="javascript:void(0);"><img src="{% static 'assets/img/icons/edit-set.svg' %}" alt="Edit"></a> -->
+                                </div>
+                            </div>
+                            <div class="profile-contentname">
+                                <h2>{{ form.name.value }}</h2>
+                                <h4>Update your business logo and details.</h4>
+                            </div>
+                        </div>
+                      
+                    </div>
+                </div>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="name">Business Name</label>
+                                {{ form.name }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="phone_number">Business Phone Number</label>
+                                {{ form.phone_number }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="email">Business Email ID</label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="website">Website</label>
+                                {{ form.website }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="social_media_links">Social Media Links</label>
+                                {{ form.social_media_links }}
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-12">
+                            <div class="form-group">
+                                <label for="logo">Logo</label>
+                                {{ form.logo }}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-submit me-2">Submit</button>
+                            <a href="javascript:void(0);" class="btn btn-cancel">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

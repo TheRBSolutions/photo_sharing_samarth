@@ -1,0 +1,7 @@
+app/_pycache_
+app/migrations
+kapturise_photo_sharing/_pycache_
+db.sqlite3
+.env
+media
+vercel.json

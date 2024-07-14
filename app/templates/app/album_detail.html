@@ -1,0 +1,537 @@
+{% extends 'app/app.html' %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/owlcarousel/owl.carousel.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/owlcarousel/owl.theme.default.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/select2/css/select2.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/bootstrap-datetimepicker.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/fontawesome.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/fontawesome/css/all.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+
+   <style>
+    .cover-image {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+    }
+    .album-cover {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        margin-bottom: 20px;
+    }
+    .card img {
+        height: 200px;
+        object-fit: cover;
+    }
+    .image-container {
+        position: relative;
+    }
+    .download-icon, .delete-icon {
+        position: absolute;
+        top: 10px;
+        display: none;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border-radius: 50%;
+        padding: 5px;
+    }
+    .download-icon {
+        right: 40px;
+    }
+    .delete-icon {
+        right: 10px;
+    }
+    .image-container:hover .download-icon,
+    .image-container:hover .delete-icon {
+        display: block;
+    }
+    .progress-container {
+        width: 100%;
+        height: 20px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        margin-top: 10px;
+        overflow: hidden;
+        position: relative;
+        display: none;
+    }
+    .progress-bar {
+        height: 100%;
+        width: 0%;
+        background-color: #007bff;
+        transition: width 0.3s ease;
+    }
+    .progress-text {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        color: whitesmoke;
+        font-size: 12px;
+        line-height: 20px;
+    }
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        display: none;
+        margin: 20px auto;
+    }
+    .profile-set .profile-head {
+        height: 250px;
+        background: linear-gradient(90deg, #EA5455 0%, #3794fc 100%);
+        border-radius: 0 10px 0 0;
+        background-size: cover;
+        background-position: center;
+    }
+    .btn-options-set {
+        background: #7367f0;
+        max-width: 160px;
+        margin-left: auto;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+    }
+    .btn-options-set:hover {
+        background: #7367f0;
+        max-width: 160px;
+        margin-left: auto;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .dropzone {
+        border: 2px dashed #007bff;
+        border-radius: 5px;
+        background: #f9f9f9;
+        padding: 20px;
+        text-align: center;
+    }
+    .dropzone .dz-message {
+        font-weight: bold;
+        color: #333;
+    }
+    .dropzone .dz-message .icon {
+        font-size: 48px;
+        color: #007bff;
+    }
+    .progress-container {
+        width: 100%;
+        height: 20px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        margin-top: 10px;
+        overflow: hidden;
+        position: relative;
+        display: none;
+    }
+    .progress-bar {
+        height: 100%;
+        width: 0%;
+        background-color: #007bff;
+        transition: width 0.3s ease;
+    }
+    .progress-text {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        color: whitesmoke;
+        font-size: 12px;
+        line-height: 20px;
+    }
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        display: none;
+        margin: 20px auto;
+    }
+
+    #imageDetailsModal img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+#imageDetailsModal .form-group {
+    margin-bottom: 15px;
+}
+
+</style>
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="card">
+            <div class="card-body">
+                <div class="profile-set">
+                    <div class="profile-head" style="{% if album.cover_image %}background-image: url('{{ album.cover_image.url }}');{% endif %}">
+                    </div>
+                    <div class="profile-top">
+                        <div class="profile-content">
+                            <div class="profile-contentimg" style=" height: 120px; object-fit: cover;">
+                                <img src="{{ business.logo.url }}" style="height: 120px;" alt="Business Logo" id="blah">
+                                <div class="profileupload"></div>
+                            </div>
+                            <div class="profile-contentname">
+                                <h2>{{ album.title}}</h2>
+                                <p>{{ album.description}}</p>
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <button class="btn btn-options-set" id="uploadBtn"><i class="fas fa-upload"></i> Upload</button>
+                            <button class="btn btn-options-set"><i class="fas fa-download"></i> Download</button>
+                            <button class="btn btn-options-set" onclick="copyLink()"><i class="fas fa-share-alt"></i> Share</button>
+                            <button class="btn btn-options-set"  id="printQRbtn" ><i class="fas fa-qrcode"></i> Print QR</button>
+                            <a class="btn btn-options-set" href="{% url 'album_settings' album.id %}"><i class="fas fa-gear"></i> Settings</a>                    
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12 tabs_wrapper">
+                        <ul class="tabs owl-carousel owl-theme owl-product border-0">
+                            {% for folder_name, urls in media_items.items %}
+                            <li class="{% if forloop.first %}active{% endif %}" id="{{ folder_name|slugify }}">
+                                <div class="product-details">
+                                    <img src="{% static 'assets/img/product/folder.png' %}" alt="img">
+                                    <h6>{{ folder_name }}</h6>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+
+                        <div class="tabs_container">
+                            {% for folder_name, urls in media_items.items %}
+                            <div class="tab_content {% if forloop.first %}active{% endif %}" data-tab="{{ folder_name|slugify }}">
+                                <div class="row">
+                                    {% for url in urls %}
+                                    <div class="col-lg-3 col-sm-6 d-flex">
+                                        <div class="productset flex-fill active">
+                                            <div class="productsetimg">
+                                                <img src="{{ url }}" alt="img" loading="lazy">
+                                                <a href="{{ url }}" download class="download-icon"><i class="fas fa-download"></i></a>
+                                                <span class="delete-icon" onclick="deleteImage('{{ url }}')"><i class="fas fa-trash"></i></span>
+                                                <div class="check-product"><i class="fa fa-check"></i></div>
+                                                <!-- <div class="check-product" onclick="deleteImage('{{ url }}')"><i class="fa fa-trash"></i></div> -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Details Modal -->
+<div class="modal fade" id="imageDetailsModal" tabindex="-1" role="dialog" aria-labelledby="imageDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageDetailsModalLabel">Image Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="img" class="img-fluid mb-3">
+                <div class="form-group">
+                    <label for="imageDescription">Description</label>
+                    <textarea id="imageDescription" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="imageTags">Tags</label>
+                    <input type="text" id="imageTags" class="form-control" placeholder="Enter tags">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-primary" id="saveChangesBtn">Save Changes</button>
+                    <a type="button"id="downloadImageBtn" class="btn btn-sm btn-primary" download>Download Image</a>
+                    <button type="button" class="btn btn-sm btn-primary" id="deleteImageBtn">Delete Image</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print QR Modal -->
+<div class="modal fade" id="printQRModal" tabindex="-1" role="dialog" aria-labelledby="printQRModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="printQRModalLabel">Print QR Card</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body" id="qrCardContent">
+                <div class="card text-center border-0">
+                    <div class="card-body">
+                        <h5 class="card-title display-4">{{ album.title }}</h5>
+                        <p class="card-text lead font-weight-bold text-warning">GET YOUR OWN PHOTOS!</p>
+                        <p class="card-text">from this event instantly using face recognition.</p>
+                        <p class="card-text">Scan this code, click a selfie.</p>
+                        <img src="{% url 'generate_qr_code' album.id %}" alt="QR Code" class="img-fluid mx-auto d-block" style="max-width: 200px; margin-bottom: 20px;">
+                        <div class="d-flex align-items-center justify-content-center mb-4">
+                            <img src="{{business.logo.url}}" alt="Business Logo" class="img-fluid" style="max-width: 50px; height: 25px; margin-right: 10px;">
+                            <p class="card-text mb-0">{{ business.name }}</p>
+                        </div>
+                        <p class="card-text"><small>Technology by <strong>Kapturise</strong></small></p>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="modal-footer text-center">
+                <a id="downloadQrCardBtn" class="btn btn-primary">Download QR Card</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">Upload Images</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" class="dropzone" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="folderSelect">Select Folder</label>
+                        <select class="select" id="folderSelect" name="folder">
+                            {% for folder_name in media_items.keys %}
+                            <option value="{{ folder_name }}">{{ folder_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="folder_name">Or Create New Folder</label>
+                        <input type="text" class="form-control" id="folder_name" name="folder_name" placeholder="New Folder">
+                    </div>
+                    <div class="dropzone" id="fileDropzone">
+                        <div class="dz-message">
+                            <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <h4>Drag and drop a file here or click</h4>
+                        </div>
+                    </div>
+                </form>
+                <div id="uploadStatus"></div>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                    <div class="progress-text">0%</</div>
+                </div>
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <div id="uploadStatus"></div>
+                <div class="progress-container">
+                    <div class="progress-bar"></div>
+                    <div class="progress-text">0%</div>
+                </div>
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <button id="submit-all-button"  style="display: none;">Submit All</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/plugins/owlcarousel/owl.carousel.min.js' %}"></script>
+<script src="{% static 'assets/plugins/select2/js/select2.min.js' %}"></script>
+<script src="{% static 'assets/js/moment.min.js' %}"></script>
+<script src="{% static 'assets/js/bootstrap-datetimepicker.min.js' %}"></script>
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+<script>
+    Dropzone.autoDiscover = false;
+
+    $(document).ready(function () {
+        $('#uploadBtn').click(function () {
+            $('#uploadModal').modal('show');
+        });
+    });
+        $('#printQRbtn').click(function () {
+            $('#printQRModal').modal('show');
+        });
+       
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+
+        var myDropzone = new Dropzone("#fileDropzone", {
+            url: "{% url 'album_detail' album.id %}",
+            maxFilesize: 200, // MB
+            addRemoveLinks: true,
+            headers: {
+                "X-CSRFToken": csrftoken // Add the CSRF token to the headers
+            },
+            init: function () {
+                this.on("queuecomplete", function() {
+                    alert("Files Uploaded successfully!");
+                    location.reload();
+                });
+
+                this.on("sending", function(file, xhr, formData) {
+                    var selectedFolder = $('#folderSelect').val();
+                    var newFolder = $('#folder_name').val().trim();
+                    if (selectedFolder == null && newFolder == "") { 
+                        selectedFolder = 'Main';
+                    }
+                    if (newFolder) {
+                        formData.append("folder_name", newFolder);
+                    } else {
+                        formData.append("folder_name", selectedFolder);
+                    }
+                    $('.progress-container').show();
+                    $('.spinner-border').show();
+                });
+
+                this.on("uploadprogress", function(file, progress) {
+                    $('.progress-bar').width(progress + '%');
+                    $('.progress-text').text(Math.round(progress) + '%');
+                });
+
+                this.on("success", function(file, response) {
+                    if (response.status === "success") {
+                        $('#uploadStatus').html('<div class="alert alert-success">' + response.message + '</div>');
+                    } else {
+                        $('#uploadStatus').html('<div class="alert alert-danger">' + response.message + '</div>');
+                    }
+                    $('.progress-container').hide();
+                    $('.spinner-border').hide();
+                });
+
+                this.on("error", function(file, response) {
+                    $('#uploadStatus').html('<div class="alert alert-danger">An error occurred while uploading the files. Please try again.</div>');
+                    $('.progress-container').hide();
+                    $('.spinner-border').hide();
+                });
+            }
+        });
+
+        document.getElementById('downloadQrCardBtn').addEventListener('click', function() {
+            html2canvas(document.querySelector("#qrCardContent")).then(canvas => {
+                var link = document.createElement('a');
+                link.href = canvas.toDataURL();
+                link.download = 'QRCard.png';
+                link.click();
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const qr = new QRious({
+                element: document.getElementById('qrcode'),
+                value: '{{ album.get_qr_code_url }}',  // Ensure this URL or text is correctly set
+                size: 200,
+            });
+        });
+
+        function deleteImage(url) {
+            if (confirm('Are you sure you want to delete this image?')) {
+                fetch('/delete_image/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ 'image_url': url })
+                }).then(response => {
+                    if (response.ok) {
+                        document.querySelector(`img[src="${url}"]`).closest('.image-container').remove();
+                        alert('Image deleted successfully.');
+                        $('#imageDetailsModal').modal('hide');
+                    } else {
+                        response.json().then(data => {
+                            alert('Failed to delete the image: ' + data.message);
+                        });
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while trying to delete the image.');
+                });
+            }
+        }
+
+        // Function to show the image details modal
+        function showImageDetails(url) {
+            const modalImage = document.getElementById('modalImage');
+            const downloadImageBtn = document.getElementById('downloadImageBtn');
+            const deleteImageBtn = document.getElementById('deleteImageBtn');
+
+            modalImage.src = url;
+            downloadImageBtn.href = url;
+            deleteImageBtn.onclick = function() { deleteImage(url); };
+
+            $('#imageDetailsModal').modal('show');
+        }
+
+        // Add event listeners to image elements
+        const imageElements = document.querySelectorAll('.productsetimg img');
+        imageElements.forEach(imageElement => {
+            imageElement.addEventListener('click', function() {
+                const imageUrl = this.src;
+                showImageDetails(imageUrl);
+            });
+        });
+
+        // Handle save changes button click
+        document.getElementById('saveChangesBtn').addEventListener('click', function() {
+            const description = document.getElementById('imageDescription').value;
+            const tags = document.getElementById('imageTags').value;
+            // Perform AJAX request to save description and tags
+            // (Implementation depends on your backend)
+            $('#imageDetailsModal').modal('hide');
+        });
+
+        function copyLink() {
+            
+            const albumId = '{{ album_id }}';
+            const url = `${window.location.origin}/album/${albumId}/upload_selfie/`;
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = url;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+            alert('Link copied to clipboard: ' + url);
+        }
+
+       
+ 
+</script>
+      
+
+
+{% endblock content %}
