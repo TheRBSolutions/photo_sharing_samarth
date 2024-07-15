@@ -1,0 +1,106 @@
+{% extends 'app/app.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Customize Your QR Card</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <canvas id="qr-canvas" width="600" height="400"></canvas>
+        </div>
+        <div class="col-md-4">
+            <h4>Customization Options</h4>
+            <div class="mb-3">
+                <label for="background-color" class="form-label">Background Color</label>
+                <input type="color" class="form-control" id="background-color">
+            </div>
+            <div class="mb-3">
+                <label for="text-color" class="form-label">Text Color</label>
+                <input type="color" class="form-control" id="text-color">
+            </div>
+            <div class="mb-3">
+                <label for="font-select" class="form-label">Font</label>
+                <select class="form-select" id="font-select">
+                    <option value="Arial">Arial</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="pattern-select" class="form-label">Background Pattern</label>
+                <select class="form-select" id="pattern-select">
+                    <option value="none">None</option>
+                    <option value="dots">Dots</option>
+                    <option value="stripes">Stripes</option>
+                    <option value="floral">Floral</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="download-btn">Download Design</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script>
+    // JavaScript code for customization will go here
+    document.addEventListener('DOMContentLoaded', function() {
+        var canvas = new fabric.Canvas('qr-canvas');
+        var qrUrl = "{% url 'qr_code:generate' album.id %}";
+        
+        // Load QR code
+        fabric.Image.fromURL(qrUrl, function(qrImg) {
+            qrImg.scale(0.5).set({
+                left: 200,
+                top: 100
+            });
+            canvas.add(qrImg);
+        });
+
+        // Add text
+        var text = new fabric.Text("{{ album.title }}", {
+            left: 200,
+            top: 50,
+            fontFamily: 'Arial',
+            fill: 'black'
+        });
+        canvas.add(text);
+
+        // Background color
+        document.getElementById('background-color').addEventListener('change', function(e) {
+            canvas.setBackgroundColor(e.target.value, canvas.renderAll.bind(canvas));
+        });
+
+        // Text color
+        document.getElementById('text-color').addEventListener('change', function(e) {
+            text.set('fill', e.target.value);
+            canvas.renderAll();
+        });
+
+        // Font
+        document.getElementById('font-select').addEventListener('change', function(e) {
+            text.set('fontFamily', e.target.value);
+            canvas.renderAll();
+        });
+
+        // Pattern
+        document.getElementById('pattern-select').addEventListener('change', function(e) {
+            // Implementation for patterns would go here
+            // This would involve creating or loading pattern images
+        });
+
+        // Download
+        document.getElementById('download-btn').addEventListener('click', function() {
+            var dataURL = canvas.toDataURL({
+                format: 'png',
+                quality: 0.8
+            });
+            var link = document.createElement('a');
+            link.download = 'custom-qr-card.png';
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    });
+</script>
+{% endblock %}

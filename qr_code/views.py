@@ -26,5 +26,15 @@ def print_qr_card(request, album_id):
     user_profile = get_object_or_404(Profile, user=request.user)
     business = get_object_or_404(Business, user=album.photographer)
     return render(
-        request, "qr_code/print_qr_card.html", {"album": album, "profile": user_profile, "business": business}
+        request, "qr_code/customize_qr_card.html", {"album": album, "profile": user_profile, "business": business}
+    )
+
+
+# Added the new function below
+def customize_qr_card(request, album_id):
+    album = get_object_or_404(Album, id=album_id)
+    user_profile = get_object_or_404(Profile, user=request.user)
+    business = get_object_or_404(Business, user=album.photographer)
+    return render(
+        request, "qr_code/customize_qr_card.html", {"album": album, "profile": user_profile, "business": business}
     )
