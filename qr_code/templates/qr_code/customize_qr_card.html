@@ -1,12 +1,44 @@
 {% extends 'app/app.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+    .container {
+        margin-top: 50px;
+    }
+
+    #qr-canvas {
+        border: 1px solid #ccc;
+        display: block; /* Ensures it respects the parent container width */
+        margin: 0 auto; /* Centers the canvas */
+    }
+
+    .mb-3 {
+        margin-bottom: 15px;
+    }
+
+    .canvas-container {
+        background-image: 
+            linear-gradient(45deg, #ccc 25%, transparent 25%), 
+            linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+            linear-gradient(45deg, transparent 75%, #ccc 75%), 
+            linear-gradient(-45deg, transparent 75%, #ccc 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        width: 600px; /* Set the width to 600px */
+        margin: 0 auto; /* Center the container */
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <h2>Customize Your QR Card</h2>
     <div class="row">
         <div class="col-md-8">
-            <canvas id="qr-canvas" width="600" height="400"></canvas>
+            <div class="canvas-container">
+                <canvas id="qr-canvas" width="600" height="400"></canvas>
+            </div>
         </div>
         <div class="col-md-4">
             <h4>Customization Options</h4>
@@ -18,6 +50,13 @@
                 <label for="text-color" class="form-label">Text Color</label>
                 <input type="color" class="form-control" id="text-color">
             </div>
+
+            <div class="mb-3">
+                <label for="custom-text" class="form-label">Add Text</label>
+                <input type="text" class="form-control" id="custom-text" placeholder="Enter your text">
+            </div>
+            <button class="btn btn-secondary" id="add-text-btn">Add Text</button>
+            
             <div class="mb-3">
                 <label for="font-select" class="form-label">Font</label>
                 <select class="form-select" id="font-select">
@@ -27,13 +66,50 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="pattern-select" class="form-label">Background Pattern</label>
-                <select class="form-select" id="pattern-select">
-                    <option value="none">None</option>
-                    <option value="dots">Dots</option>
-                    <option value="stripes">Stripes</option>
-                    <option value="floral">Floral</option>
+                <label for="font-size" class="form-label">Font Size</label>
+                <input type="number" class="form-control" id="font-size" value="20">
+            </div>
+            <div class="mb-3">
+                <label for="font-style" class="form-label">Font Style</label>
+                <select class="form-select" id="font-style">
+                    <option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                    <option value="italic">Italic</option>
                 </select>
+            </div>
+           
+            <div class="mb-3">
+                <label for="background-upload" class="form-label">Upload Background Image</label>
+                <input type="file" class="form-control" id="background-upload">
+            </div>
+            <div class="mb-3">
+                <label for="logo-upload" class="form-label">Upload Logo</label>
+                <input type="file" class="form-control" id="logo-upload">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Text Alignment</label>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary" id="align-left">Left</button>
+                    <button type="button" class="btn btn-outline-secondary" id="align-center">Center</button>
+                    <button type="button" class="btn btn-outline-secondary" id="align-right">Right</button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="qr-size" class="form-label">QR Code Size</label>
+                <input type="range" class="form-range" id="qr-size" min="0.1" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="mb-3">
+                <label for="download-format" class="form-label">Download Format</label>
+                <select class="form-select" id="download-format">
+                    <option value="png">PNG</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="pdf">PDF</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-secondary" id="undo-btn">Undo</button>
+                <button class="btn btn-secondary" id="redo-btn">Redo</button>
+                <button class="btn btn-secondary" id="clear-background">Clear Background</button>
             </div>
             <button class="btn btn-primary" id="download-btn">Download Design</button>
         </div>
@@ -41,66 +117,178 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 <script>
-    // JavaScript code for customization will go here
     document.addEventListener('DOMContentLoaded', function() {
         var canvas = new fabric.Canvas('qr-canvas');
+        canvas.backgroundColor = null;  // Start with a transparent background
         var qrUrl = "{% url 'qr_code:generate' album.id %}";
-        
-        // Load QR code
-        fabric.Image.fromURL(qrUrl, function(qrImg) {
-            qrImg.scale(0.5).set({
+        var text;
+        var qrImage;
+    
+        fabric.Image.fromURL(qrUrl, function(img) {
+            qrImage = img;
+            qrImage.scale(0.5).set({
                 left: 200,
                 top: 100
             });
-            canvas.add(qrImg);
+            canvas.add(qrImage);
         });
-
-        // Add text
-        var text = new fabric.Text("{{ album.title }}", {
+    
+        text = new fabric.Text("{{ album.title }}", {
             left: 200,
             top: 50,
             fontFamily: 'Arial',
             fill: 'black'
         });
         canvas.add(text);
-
-        // Background color
+    
+        // Add custom text event listener
+        document.getElementById('add-text-btn').addEventListener('click', function() {
+            var customText = document.getElementById('custom-text').value;
+            if (customText.trim() !== "") {
+                var newText = new fabric.Text(customText, {
+                    left: 200,
+                    top: 150, // Adjust the position as needed
+                    fontFamily: 'Arial',
+                    fill: 'black'
+                });
+                canvas.add(newText);
+                canvas.renderAll();
+            }
+        });
+    
         document.getElementById('background-color').addEventListener('change', function(e) {
+            canvas.backgroundImage = null;
             canvas.setBackgroundColor(e.target.value, canvas.renderAll.bind(canvas));
         });
-
-        // Text color
+    
         document.getElementById('text-color').addEventListener('change', function(e) {
             text.set('fill', e.target.value);
             canvas.renderAll();
         });
-
-        // Font
+    
         document.getElementById('font-select').addEventListener('change', function(e) {
             text.set('fontFamily', e.target.value);
             canvas.renderAll();
         });
-
-        // Pattern
-        document.getElementById('pattern-select').addEventListener('change', function(e) {
-            // Implementation for patterns would go here
-            // This would involve creating or loading pattern images
+    
+        document.getElementById('font-size').addEventListener('input', function(e) {
+            text.set('fontSize', parseInt(e.target.value));
+            canvas.renderAll();
         });
-
-        // Download
+    
+        document.getElementById('font-style').addEventListener('change', function(e) {
+            const style = e.target.value;
+            text.set('fontWeight', style === 'bold' ? 'bold' : 'normal');
+            text.set('fontStyle', style === 'italic' ? 'italic' : 'normal');
+            canvas.renderAll();
+        });
+    
+        document.getElementById('background-upload').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                fabric.Image.fromURL(event.target.result, function(img) {
+                    img.set({
+                        scaleX: canvas.width / img.width,
+                        scaleY: canvas.height / img.height
+                    });
+                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
+                });
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+    
+        document.getElementById('logo-upload').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                fabric.Image.fromURL(event.target.result, function(img) {
+                    img.scale(0.5).set({
+                        left: 50,
+                        top: 50
+                    });
+                    canvas.add(img);
+                    canvas.renderAll();
+                });
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+    
+        document.getElementById('align-left').addEventListener('click', function() {
+            text.set('textAlign', 'left');
+            canvas.renderAll();
+        });
+    
+        document.getElementById('align-center').addEventListener('click', function() {
+            text.set('textAlign', 'center');
+            canvas.renderAll();
+        });
+    
+        document.getElementById('align-right').addEventListener('click', function() {
+            text.set('textAlign', 'right');
+            canvas.renderAll();
+        });
+    
+        document.getElementById('qr-size').addEventListener('input', function(e) {
+            qrImage.scale(parseFloat(e.target.value));
+            canvas.renderAll();
+        });
+    
+        document.getElementById('clear-background').addEventListener('click', function() {
+            canvas.backgroundImage = null;
+            canvas.backgroundColor = null;
+            canvas.renderAll();
+        });
+    
         document.getElementById('download-btn').addEventListener('click', function() {
-            var dataURL = canvas.toDataURL({
-                format: 'png',
-                quality: 0.8
+            const format = document.getElementById('download-format').value;
+            const dataURL = canvas.toDataURL({
+                format: format,
+                quality: 1
             });
-            var link = document.createElement('a');
-            link.download = 'custom-qr-card.png';
-            link.href = dataURL;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            
+            if (format === 'pdf') {
+                const pdf = new jsPDF();
+                pdf.addImage(dataURL, 'JPEG', 0, 0);
+                pdf.save('custom-qr-card.pdf');
+            } else {
+                const link = document.createElement('a');
+                link.download = `custom-qr-card.${format}`;
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+    
+        let state = [];
+        let mods = 0;
+    
+        canvas.on('object:added', saveState);
+        canvas.on('object:modified', saveState);
+    
+        function saveState() {
+            state.push(JSON.stringify(canvas));
+            mods = 0;
+        }
+    
+        document.getElementById('undo-btn').addEventListener('click', function() {
+            if (state.length > 1) {
+                canvas.clear();
+                state.pop();
+                canvas.loadFromJSON(state[state.length - 1], canvas.renderAll.bind(canvas));
+                mods++;
+            }
+        });
+    
+        document.getElementById('redo-btn').addEventListener('click', function() {
+            if (mods > 0) {
+                canvas.clear();
+                canvas.loadFromJSON(state[state.length - 1], canvas.renderAll.bind(canvas));
+                mods--;
+            }
         });
     });
+    
 </script>
 {% endblock %}

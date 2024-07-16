@@ -1,4 +1,4 @@
-{% extends 'app/app.html' %}
+{% comment %} {% extends 'app/app.html' %}
 {% load static %}
 
 {% block content %}
@@ -18,4 +18,4 @@
         <a href="{% url 'qr_code:generate' album.id %}" download="QRCard.png" class="btn btn-primary">Download QR Card</a>
     </div>
 </div>
-{% endblock %}
+{% endblock %} {% endcomment %}

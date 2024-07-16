@@ -190,7 +190,7 @@ from django.core.files.base import ContentFile
 import io
 
 @login_required(login_url="login")
-@admin_only
+# @admin_only
 def album_detail(request, id):
     business, created = Business.objects.get_or_create(user=request.user)
     album = get_object_or_404(Album, id=id)

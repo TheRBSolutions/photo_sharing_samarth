@@ -275,7 +275,7 @@
                         <p class="card-text lead font-weight-bold text-warning">GET YOUR OWN PHOTOS!</p>
                         <p class="card-text">from this event instantly using face recognition.</p>
                         <p class="card-text">Scan this code, click a selfie.</p>
-                        <img src="{% url 'qr_code:generate' album.id %}" alt="QR Code" class="img-fluid mx-auto d-block" style="max-width: 200px; margin-bottom: 20px;">
+                        {% comment %} <img src="{% url 'qr_code:generate' album.id %}" alt="QR Code" class="img-fluid mx-auto d-block" style="max-width: 200px; margin-bottom: 20px;"> {% endcomment %}
                         <div class="d-flex align-items-center justify-content-center mb-4">
                             <img src="{{business.logo.url}}" alt="Business Logo" class="img-fluid" style="max-width: 50px; height: 25px; margin-right: 10px;">
                             <p class="card-text mb-0">{{ business.name }}</p>
@@ -368,9 +368,9 @@
             $('#printQRModal').modal('show');
         });
 
-        document.getElementById('downloadQrCardBtn').addEventListener('click', function() {
+        {% comment %} document.getElementById('downloadQrCardBtn').addEventListener('click', function() {
             window.location.href = "{% url 'qr_code:print' album.id %}";
-        });
+        }); {% endcomment %}
 
         function getCookie(name) {
             var cookieValue = null;
