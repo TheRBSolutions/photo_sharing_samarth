@@ -160,6 +160,21 @@
     #imageDetailsModal .form-group {
         margin-bottom: 15px;
     }
+
+
+
+    
+        #qrCodeContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        #qrCodeContainer img {
+            max-width: 200px;
+            height: auto;
+        }
+    
 </style>
 
 <div class="page-wrapper">
@@ -260,33 +275,30 @@
     </div>
 </div>
 
+
+
+
 <!-- Print QR Modal -->
 <div class="modal fade" id="printQRModal" tabindex="-1" role="dialog" aria-labelledby="printQRModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="printQRModalLabel">Print QR Card</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-            <div class="modal-body" id="qrCardContent">
-                <div class="card text-center border-0">
-                    <div class="card-body">
-                        <h5 class="card-title display-4">{{ album.title }}</h5>
-                        <p class="card-text lead font-weight-bold text-warning">GET YOUR OWN PHOTOS!</p>
-                        <p class="card-text">from this event instantly using face recognition.</p>
-                        <p class="card-text">Scan this code, click a selfie.</p>
-                        {% comment %} <img src="{% url 'qr_code:generate' album.id %}" alt="QR Code" class="img-fluid mx-auto d-block" style="max-width: 200px; margin-bottom: 20px;"> {% endcomment %}
-                        <div class="d-flex align-items-center justify-content-center mb-4">
-                            <img src="{{business.logo.url}}" alt="Business Logo" class="img-fluid" style="max-width: 50px; height: 25px; margin-right: 10px;">
-                            <p class="card-text mb-0">{{ business.name }}</p>
-                        </div>
-                        <p class="card-text"><small>Technology by <strong>Kapturise</strong></small></p>
-                    </div>
+            <div class="modal-body text-center">
+                <p>QR code for {{ album.title }}</p>
+                <p>Scan this code to access the album:</p>
+                <div id="qrCodeContainer">
+                    <img src="{% url 'qr_code:generate' album.id %}" alt="QR Code" class="img-fluid">
                 </div>
             </div>
-            <hr>
-            <div class="modal-footer text-center">
-                <a id="downloadQrCardBtn" class="btn btn-primary">Download QR Card</a>
+            <div class="modal-footer">
+                <button id="downloadQrCardBtn" class="btn btn-primary">Download QR Card</button>
+                <a href="{% url 'qr_code:customize_qr_card' album.id %}" class="btn btn-primary">Customize</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -327,15 +339,7 @@
                 <div id="uploadStatus"></div>
                 <div class="progress-container">
                     <div class="progress-bar"></div>
-                    <div class="progress-text">0%</</div>
-                </div>
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-                <div id="uploadStatus"></div>
-                <div class="progress-container">
-                    <div class="progress-bar"></div>
-                    <div class="progress-text">0%</</div>
+                    <div class="progress-text">0%</div>
                 </div>
                 <div class="spinner-border text-primary" role="status">
                     <span class="sr-only">Loading...</span>
@@ -356,6 +360,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
+
+
 <script>
     Dropzone.autoDiscover = false;
 
@@ -368,9 +374,35 @@
             $('#printQRModal').modal('show');
         });
 
-        {% comment %} document.getElementById('downloadQrCardBtn').addEventListener('click', function() {
-            window.location.href = "{% url 'qr_code:print' album.id %}";
-        }); {% endcomment %}
+        // Ensure the modal can be closed
+    $('#printQRModal .close, #printQRModal button[data-dismiss="modal"]').click(function () {
+        $('#printQRModal').modal('hide');
+    });
+
+    $('#downloadQrCardBtn').click(function() {
+        var qrCodeImg = document.querySelector('#qrCodeContainer img');
+        var link = document.createElement('a');
+        link.href = qrCodeImg.src;
+        link.download = 'QRCode.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+        const qr = new QRious({
+            element: document.getElementById('qrcode'),
+            value: '{{ album.get_qr_code_url }}',
+            size: 200,
+        });
+
+        $('#downloadQrCardBtn').click(function () {
+            html2canvas(document.querySelector("#qrcode")).then(canvas => {
+                var link = document.createElement('a');
+                link.href = canvas.toDataURL();
+                link.download = 'QRCard.png';
+                link.click();
+            });
+        });
 
         function getCookie(name) {
             var cookieValue = null;
@@ -390,10 +422,10 @@
 
         var myDropzone = new Dropzone("#fileDropzone", {
             url: "{% url 'album_detail' album.id %}",
-            maxFilesize: 200, // MB
+            maxFilesize: 200,
             addRemoveLinks: true,
             headers: {
-                "X-CSRFToken": csrftoken // Add the CSRF token to the headers
+                "X-CSRFToken": csrftoken
             },
             init: function () {
                 this.on("queuecomplete", function() {
@@ -438,92 +470,71 @@
                 });
             }
         });
+    });
 
-        document.getElementById('downloadQrCardBtn').addEventListener('click', function() {
-            html2canvas(document.querySelector("#qrCardContent")).then(canvas => {
-                var link = document.createElement('a');
-                link.href = canvas.toDataURL();
-                link.download = 'QRCard.png';
-                link.click();
+    function deleteImage(url) {
+        if (confirm('Are you sure you want to delete this image?')) {
+            fetch('/delete_image/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ 'image_url': url })
+            }).then(response => {
+                if (response.ok) {
+                    document.querySelector(`img[src="${url}"]`).closest('.image-container').remove();
+                    alert('Image deleted successfully.');
+                    $('#imageDetailsModal').modal('hide');
+                } else {
+                    response.json().then(data => {
+                        alert('Failed to delete the image: ' + data.message);
+                    });
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while trying to delete the image.');
             });
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const qr = new QRious({
-                element: document.getElementById('qrcode'),
-                value: '{{ album.get_qr_code_url }}',  // Ensure this URL or text is correctly set
-                size: 200,
-            });
-        });
-
-        function deleteImage(url) {
-            if (confirm('Are you sure you want to delete this image?')) {
-                fetch('/delete_image/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({ 'image_url': url })
-                }).then(response => {
-                    if (response.ok) {
-                        document.querySelector(`img[src="${url}"]`).closest('.image-container').remove();
-                        alert('Image deleted successfully.');
-                        $('#imageDetailsModal').modal('hide');
-                    } else {
-                        response.json().then(data => {
-                            alert('Failed to delete the image: ' + data.message);
-                        });
-                    }
-                }).catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while trying to delete the image.');
-                });
-            }
         }
+    }
 
-        // Function to show the image details modal
-        function showImageDetails(url) {
-            const modalImage = document.getElementById('modalImage');
-            const downloadImageBtn = document.getElementById('downloadImageBtn');
-            const deleteImageBtn = document.getElementById('deleteImageBtn');
+    function showImageDetails(url) {
+        const modalImage = document.getElementById('modalImage');
+        const downloadImageBtn = document.getElementById('downloadImageBtn');
+        const deleteImageBtn = document.getElementById('deleteImageBtn');
 
-            modalImage.src = url;
-            downloadImageBtn.href = url;
-            deleteImageBtn.onclick = function() { deleteImage(url); };
+        modalImage.src = url;
+        downloadImageBtn.href = url;
+        deleteImageBtn.onclick = function() { deleteImage(url); };
 
-            $('#imageDetailsModal').modal('show');
-        }
+        $('#imageDetailsModal').modal('show');
+    }
 
-        // Add event listeners to image elements
-        const imageElements = document.querySelectorAll('.productsetimg img');
-        imageElements.forEach(imageElement => {
-            imageElement.addEventListener('click', function() {
-                const imageUrl = this.src;
-                showImageDetails(imageUrl);
-            });
+    document.getElementById('saveChangesBtn').addEventListener('click', function() {
+        const description = document.getElementById('imageDescription').value;
+        const tags = document.getElementById('imageTags').value;
+        // Implement AJAX request to save description and tags
+        $('#imageDetailsModal').modal('hide');
+    });
+
+    function copyLink() {
+        const albumId = '{{ album.id }}';
+        const url = `${window.location.origin}/album/${albumId}/upload_selfie/`;
+        const dummy = document.createElement('textarea');
+        document.body.appendChild(dummy);
+        dummy.value = url;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        alert('Link copied to clipboard: ' + url);
+    }
+
+    const imageElements = document.querySelectorAll('.productsetimg img');
+    imageElements.forEach(imageElement => {
+        imageElement.addEventListener('click', function() {
+            const imageUrl = this.src;
+            showImageDetails(imageUrl);
         });
-
-        // Handle save changes button click
-        document.getElementById('saveChangesBtn').addEventListener('click', function() {
-            const description = document.getElementById('imageDescription').value;
-            const tags = document.getElementById('imageTags').value;
-            // Perform AJAX request to save description and tags
-            // (Implementation depends on your backend)
-            $('#imageDetailsModal').modal('hide');
-        });
-
-        function copyLink() {
-            const albumId = '{{ album_id }}';
-            const url = `${window.location.origin}/album/${albumId}/upload_selfie/`;
-            const dummy = document.createElement('textarea');
-            document.body.appendChild(dummy);
-            dummy.value = url;
-            dummy.select();
-            document.execCommand('copy');
-            document.body.removeChild(dummy);
-            alert('Link copied to clipboard: ' + url);
-        }
+    });
 </script>
-
-{% endblock content %}
+{% endblock %}
