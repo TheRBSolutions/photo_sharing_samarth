@@ -1,294 +1,403 @@
-{% extends 'app/app.html' %}
-{% load static %}
-
-{% block extra_css %}
-<style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customize QR Card</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
     .container {
-        margin-top: 50px;
+      margin-top: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    #qr-canvas {
-        border: 1px solid #ccc;
-        display: block; /* Ensures it respects the parent container width */
-        margin: 0 auto; /* Centers the canvas */
-    }
-
-    .mb-3 {
-        margin-bottom: 15px;
+    .flex-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
     }
 
     .canvas-container {
-        background-image: 
-            linear-gradient(45deg, #ccc 25%, transparent 25%), 
-            linear-gradient(-45deg, #ccc 25%, transparent 25%), 
-            linear-gradient(45deg, transparent 75%, #ccc 75%), 
-            linear-gradient(-45deg, transparent 75%, #ccc 75%);
-        background-size: 20px 20px;
-        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-        width: 600px; /* Set the width to 600px */
-        margin: 0 auto; /* Center the container */
+      width: 100%;
+      max-width: 800px;
+      background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
+        linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+      background-size: 20px 20px;
+      background-position:
+        0 0,
+        0 10px,
+        10px -10px,
+        -10px 0px;
+      margin-bottom: 20px;
+      
+      position: relative;
     }
-</style>
-{% endblock %}
 
-{% block content %}
-<div class="container mt-5">
+    canvas {
+      width: 100%;
+      height: auto;
+    }
+
+    .mb-3 {
+      margin-bottom: 15px;
+    }
+
+    .canvas-title {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    @media (min-width: 768px) {
+      .flex-container {
+        flex-direction: row;
+      }
+
+      .customization-options {
+        margin-left: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
     <h2>Customize Your QR Card</h2>
-    <div class="row">
-        <div class="col-md-8">
-            <div class="canvas-container">
-                <canvas id="qr-canvas" width="600" height="400"></canvas>
-            </div>
+    <div class="flex-container">
+      <div class="canvas-section">
+        <div class="canvas-title" id="canvas-title">Landscape</div>
+        <div class="canvas-container" id="canvas-container">
+          <canvas id="qr-canvas" width="800" height="600"></canvas>
         </div>
-        <div class="col-md-4">
-            <h4>Customization Options</h4>
-            <div class="mb-3">
-                <label for="background-color" class="form-label">Background Color</label>
-                <input type="color" class="form-control" id="background-color">
-            </div>
-            <div class="mb-3">
-                <label for="text-color" class="form-label">Text Color</label>
-                <input type="color" class="form-control" id="text-color">
-            </div>
-
-            <div class="mb-3">
-                <label for="custom-text" class="form-label">Add Text</label>
-                <input type="text" class="form-control" id="custom-text" placeholder="Enter your text">
-            </div>
-            <button class="btn btn-secondary" id="add-text-btn">Add Text</button>
-            
-            <div class="mb-3">
-                <label for="font-select" class="form-label">Font</label>
-                <select class="form-select" id="font-select">
-                    <option value="Arial">Arial</option>
-                    <option value="Verdana">Verdana</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="font-size" class="form-label">Font Size</label>
-                <input type="number" class="form-control" id="font-size" value="20">
-            </div>
-            <div class="mb-3">
-                <label for="font-style" class="form-label">Font Style</label>
-                <select class="form-select" id="font-style">
-                    <option value="normal">Normal</option>
-                    <option value="bold">Bold</option>
-                    <option value="italic">Italic</option>
-                </select>
-            </div>
-           
-            <div class="mb-3">
-                <label for="background-upload" class="form-label">Upload Background Image</label>
-                <input type="file" class="form-control" id="background-upload">
-            </div>
-            <div class="mb-3">
-                <label for="logo-upload" class="form-label">Upload Logo</label>
-                <input type="file" class="form-control" id="logo-upload">
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Text Alignment</label>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-outline-secondary" id="align-left">Left</button>
-                    <button type="button" class="btn btn-outline-secondary" id="align-center">Center</button>
-                    <button type="button" class="btn btn-outline-secondary" id="align-right">Right</button>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="qr-size" class="form-label">QR Code Size</label>
-                <input type="range" class="form-range" id="qr-size" min="0.1" max="1" step="0.1" value="0.5">
-            </div>
-            <div class="mb-3">
-                <label for="download-format" class="form-label">Download Format</label>
-                <select class="form-select" id="download-format">
-                    <option value="png">PNG</option>
-                    <option value="jpeg">JPEG</option>
-                    <option value="pdf">PDF</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <button class="btn btn-secondary" id="undo-btn">Undo</button>
-                <button class="btn btn-secondary" id="redo-btn">Redo</button>
-                <button class="btn btn-secondary" id="clear-background">Clear Background</button>
-            </div>
-            <button class="btn btn-primary" id="download-btn">Download Design</button>
+      </div>
+      <div class="customization-options">
+        <h4>Customization Options</h4>
+        <div class="mb-3">
+          <label for="text-color" class="form-label">Text Color</label>
+          <input type="color" class="form-control" id="text-color" />
         </div>
+        <div class="mb-3">
+          <label for="custom-text" class="form-label">Add Text</label>
+          <input type="text" class="form-control" id="custom-text" placeholder="Enter your text" />
+        </div>
+        <button class="btn btn-secondary mb-3" id="add-text-btn">Add Text</button>
+        <div class="mb-3">
+          <label for="font-select" class="form-label">Font</label>
+          <select class="form-select form-control" id="font-select">
+            <option value="Arial">Arial</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Times New Roman">Times New Roman</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="font-size" class="form-label">Font Size</label>
+          <input type="number" class="form-control" id="font-size" value="20" />
+        </div>
+        <div class="mb-3">
+          <label for="font-style" class="form-label">Font Style</label>
+          <select class="form-select form-control" id="font-style">
+            <option value="normal">Normal</option>
+            <option value="bold">Bold</option>
+            <option value="italic">Italic</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="background-upload" class="form-label">Upload Background Image</label>
+          <input type="file" class="form-control" id="background-upload" />
+          <label for="background-image-size" class="form-label">Size</label>
+          <input type="range" class="form-range" id="background-image-size" min="0.1" max="1" step="0.1" value="1" />
+        </div>
+        <div class="mb-3">
+          <label for="logo-upload" class="form-label">Upload Logo</label>
+          <input type="file" class="form-control" id="logo-upload" />
+        </div>
+        <div class="mb-3">
+          <label for="qr-size" class="form-label">QR Code Size</label>
+          <input type="range" class="form-range" id="qr-size" min="0.1" max="1" step="0.1" value="0.5" />
+        </div>
+        <div class="mb-3">
+          <label for="download-format" class="form-label">Download Format</label>
+          <select class="form-select form-control" id="download-format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <button class="btn btn-primary" id="change-to-landscape">Landscape</button>
+          <button class="btn btn-primary" id="change-to-poster">Poster</button>
+          <button class="btn btn-primary" id="change-to-postcard">Postcard</button>
+        </div>
+        <button class="btn btn-danger mt-3" id="delete-btn">Delete Selected</button>
+        <div class="mb-3">
+          <button class="btn btn-primary download-btn">Download</button>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var canvas = new fabric.Canvas('qr-canvas');
-        canvas.backgroundColor = null;  // Start with a transparent background
-        var qrUrl = "{% url 'qr_code:generate' album.id %}";
-        var text;
-        var qrImage;
-    
-        fabric.Image.fromURL(qrUrl, function(img) {
-            qrImage = img;
-            qrImage.scale(0.5).set({
-                left: 200,
-                top: 100
-            });
-            canvas.add(qrImage);
-        });
-    
-        text = new fabric.Text("{{ album.title }}", {
-            left: 200,
-            top: 50,
-            fontFamily: 'Arial',
-            fill: 'black'
-        });
-        canvas.add(text);
-    
-        // Add custom text event listener
-        document.getElementById('add-text-btn').addEventListener('click', function() {
-            var customText = document.getElementById('custom-text').value;
-            if (customText.trim() !== "") {
-                var newText = new fabric.Text(customText, {
-                    left: 200,
-                    top: 150, // Adjust the position as needed
-                    fontFamily: 'Arial',
-                    fill: 'black'
-                });
-                canvas.add(newText);
-                canvas.renderAll();
-            }
-        });
-    
-        document.getElementById('background-color').addEventListener('change', function(e) {
-            canvas.backgroundImage = null;
-            canvas.setBackgroundColor(e.target.value, canvas.renderAll.bind(canvas));
-        });
-    
-        document.getElementById('text-color').addEventListener('change', function(e) {
-            text.set('fill', e.target.value);
-            canvas.renderAll();
-        });
-    
-        document.getElementById('font-select').addEventListener('change', function(e) {
-            text.set('fontFamily', e.target.value);
-            canvas.renderAll();
-        });
-    
-        document.getElementById('font-size').addEventListener('input', function(e) {
-            text.set('fontSize', parseInt(e.target.value));
-            canvas.renderAll();
-        });
-    
-        document.getElementById('font-style').addEventListener('change', function(e) {
-            const style = e.target.value;
-            text.set('fontWeight', style === 'bold' ? 'bold' : 'normal');
-            text.set('fontStyle', style === 'italic' ? 'italic' : 'normal');
-            canvas.renderAll();
-        });
-    
-        document.getElementById('background-upload').addEventListener('change', function(e) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                fabric.Image.fromURL(event.target.result, function(img) {
-                    img.set({
-                        scaleX: canvas.width / img.width,
-                        scaleY: canvas.height / img.height
-                    });
-                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas));
-                });
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        });
-    
-        document.getElementById('logo-upload').addEventListener('change', function(e) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                fabric.Image.fromURL(event.target.result, function(img) {
-                    img.scale(0.5).set({
-                        left: 50,
-                        top: 50
-                    });
-                    canvas.add(img);
-                    canvas.renderAll();
-                });
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        });
-    
-        document.getElementById('align-left').addEventListener('click', function() {
-            text.set('textAlign', 'left');
-            canvas.renderAll();
-        });
-    
-        document.getElementById('align-center').addEventListener('click', function() {
-            text.set('textAlign', 'center');
-            canvas.renderAll();
-        });
-    
-        document.getElementById('align-right').addEventListener('click', function() {
-            text.set('textAlign', 'right');
-            canvas.renderAll();
-        });
-    
-        document.getElementById('qr-size').addEventListener('input', function(e) {
-            qrImage.scale(parseFloat(e.target.value));
-            canvas.renderAll();
-        });
-    
-        document.getElementById('clear-background').addEventListener('click', function() {
-            canvas.backgroundImage = null;
-            canvas.backgroundColor = null;
-            canvas.renderAll();
-        });
-    
-        document.getElementById('download-btn').addEventListener('click', function() {
-            const format = document.getElementById('download-format').value;
-            const dataURL = canvas.toDataURL({
-                format: format,
-                quality: 1
-            });
-            
-            if (format === 'pdf') {
-                const pdf = new jsPDF();
-                pdf.addImage(dataURL, 'JPEG', 0, 0);
-                pdf.save('custom-qr-card.pdf');
-            } else {
-                const link = document.createElement('a');
-                link.download = `custom-qr-card.${format}`;
-                link.href = dataURL;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        });
-    
-        let state = [];
-        let mods = 0;
-    
-        canvas.on('object:added', saveState);
-        canvas.on('object:modified', saveState);
-    
-        function saveState() {
-            state.push(JSON.stringify(canvas));
-            mods = 0;
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var canvas = new fabric.Canvas('qr-canvas');
+      var qrImage;
+      var backgroundImage;
+      var logoImage;
+      var aspectRatios = {
+        landscape: { width: 800, height: 600, title: 'Landscape' },
+        poster: { width: 600, height: 900, title: 'Poster' },
+        postcard: { width: 600, height: 400, title: 'Postcard' },
+      };
+
+      function initCanvas(style) {
+        var currentBackgroundImage = canvas.backgroundImage;
+        var currentLogoImage = logoImage;
+
+        canvas.clear();
+        canvas.setWidth(aspectRatios[style].width);
+        canvas.setHeight(aspectRatios[style].height);
+        document.getElementById('canvas-container').style.width = canvas.width + 'px';
+        document.getElementById('canvas-title').innerText = aspectRatios[style].title;
+
+        if (currentBackgroundImage) {
+          canvas.setBackgroundImage(currentBackgroundImage, canvas.renderAll.bind(canvas), {
+            originX: 'center',
+            originY: 'center',
+            left: canvas.width / 2,
+            top: canvas.height / 2,
+          });
         }
-    
-        document.getElementById('undo-btn').addEventListener('click', function() {
-            if (state.length > 1) {
-                canvas.clear();
-                state.pop();
-                canvas.loadFromJSON(state[state.length - 1], canvas.renderAll.bind(canvas));
-                mods++;
-            }
+
+        if (currentLogoImage) {
+          canvas.add(currentLogoImage);
+        }
+
+        var qrUrl = "{% url 'qr_code:generate' album.id %}";
+
+        fabric.Image.fromURL(qrUrl, function (img) {
+          qrImage = img;
+          var scaleFactor =
+            Math.min(canvas.width / img.width, canvas.height / img.height) * 0.5;
+          img.scale(scaleFactor).set({
+            left: canvas.width / 2,
+            top: canvas.height / 2,
+            originX: 'center',
+            originY: 'center',
+          });
+          canvas.add(img);
+          canvas.renderAll();
         });
-    
-        document.getElementById('redo-btn').addEventListener('click', function() {
-            if (mods > 0) {
-                canvas.clear();
-                canvas.loadFromJSON(state[state.length - 1], canvas.renderAll.bind(canvas));
-                mods--;
-            }
+
+        var initialText = new fabric.Text('{{ album.title }}', {
+          left: canvas.width / 2,
+          top: 50,
+          fontFamily: 'Arial',
+          fill: 'black',
+          originX: 'center',
         });
+        canvas.add(initialText);
+      }
+
+      initCanvas('landscape');
+
+      // Change canvas style
+      document.getElementById('change-to-landscape').addEventListener('click', function () {
+        initCanvas('landscape');
+      });
+      document.getElementById('change-to-poster').addEventListener('click', function () {
+        initCanvas('poster');
+      });
+      document.getElementById('change-to-postcard').addEventListener('click', function () {
+        initCanvas('postcard');
+      });
+
+      // Add custom text event listener
+      document.getElementById('add-text-btn').addEventListener('click', function () {
+        var customText = document.getElementById('custom-text').value;
+        if (customText.trim() !== '') {
+          var newText = new fabric.Text(customText, {
+            left: canvas.width / 2,
+            top: 150,
+            fontFamily: 'Arial',
+            fill: 'black',
+            originX: 'center',
+          });
+          canvas.add(newText);
+          canvas.setActiveObject(newText);
+          canvas.renderAll();
+        }
+      });
+
+      // Text color change for selected object
+      document.getElementById('text-color').addEventListener('input', function (e) {
+        var activeObject = canvas.getActiveObject();
+        if (activeObject && activeObject.type === 'text') {
+          activeObject.set('fill', e.target.value);
+          canvas.renderAll();
+        }
+      });
+
+      // Font selection
+      document.getElementById('font-select').addEventListener('change', function (e) {
+        var activeObject = canvas.getActiveObject();
+        if (activeObject && activeObject.type === 'text') {
+          activeObject.set('fontFamily', e.target.value);
+          canvas.renderAll();
+        }
+      });
+
+      // Font size
+      document.getElementById('font-size').addEventListener('input', function (e) {
+        var activeObject = canvas.getActiveObject();
+        if (activeObject && activeObject.type === 'text') {
+          activeObject.set('fontSize', parseInt(e.target.value));
+          canvas.renderAll();
+        }
+      });
+
+      // Font style
+      document.getElementById('font-style').addEventListener('change', function (e) {
+        var activeObject = canvas.getActiveObject();
+        if (activeObject && activeObject.type === 'text') {
+          const style = e.target.value;
+          activeObject.set('fontWeight', style === 'bold' ? 'bold' : 'normal');
+          activeObject.set('fontStyle', style === 'italic' ? 'italic' : 'normal');
+          canvas.renderAll();
+        }
+      });
+
+      // Delete button functionality
+      document.getElementById('delete-btn').addEventListener('click', function () {
+        var activeObject = canvas.getActiveObject();
+        if (activeObject) {
+          canvas.remove(activeObject);
+          if (activeObject === backgroundImage) {
+            backgroundImage = null;
+          }
+          if (activeObject === logoImage) {
+            logoImage = null;
+          }
+          canvas.renderAll();
+        }
+      });
+
+      // Background image upload
+      document.getElementById('background-upload').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        reader.onload = function (f) {
+          var data = f.target.result;
+          fabric.Image.fromURL(data, function (img) {
+            backgroundImage = img;
+            var scaleFactor = Math.max(
+              canvas.width / img.width,
+              canvas.height / img.height
+            );
+            img.scale(
+              scaleFactor *
+              parseFloat(
+                document.getElementById('background-image-size').value
+              )
+            );
+            canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+              originX: 'center',
+              originY: 'center',
+              left: canvas.width / 2,
+              top: canvas.height / 2,
+            });
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Background image size
+      document.getElementById('background-image-size').addEventListener('input', function (e) {
+        var bgImage = canvas.backgroundImage;
+        if (bgImage) {
+          var scaleFactor = Math.max(
+            canvas.width / bgImage.width,
+            canvas.height / bgImage.height
+          );
+          bgImage.scale(scaleFactor * parseFloat(e.target.value));
+          canvas.renderAll();
+        }
+      });
+
+      // Logo upload
+      document.getElementById('logo-upload').addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        reader.onload = function (f) {
+          var data = f.target.result;
+          fabric.Image.fromURL(data, function (img) {
+            var scaleFactor =
+              (Math.min(canvas.width, canvas.height) /
+                Math.max(img.width, img.height)) *
+              0.2;
+            img.scale(scaleFactor).set({
+              left: 50,
+              top: 50,
+            });
+            logoImage = img;
+            canvas.add(img);
+            canvas.renderAll();
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // QR code size
+      document.getElementById('qr-size').addEventListener('input', function (e) {
+        if (qrImage) {
+          var scaleFactor =
+            Math.min(
+              canvas.width / qrImage.width,
+              canvas.height / qrImage.height
+            ) * parseFloat(e.target.value);
+          qrImage.scale(scaleFactor);
+          qrImage.set({
+            left: canvas.width / 2,
+            top: canvas.height / 2,
+          });
+          canvas.renderAll();
+        }
+      });
+
+      // Download functionality
+      document.querySelector('.download-btn').addEventListener('click', function () {
+        var format = document.getElementById('download-format').value;
+        if (format === 'pdf') {
+          downloadPDF();
+        } else {
+          downloadImage(format);
+        }
+      });
+
+      function downloadImage(format) {
+        var dataURL = canvas.toDataURL({
+          format: format,
+          quality: 1,
+        });
+        var link = document.createElement('a');
+        link.href = dataURL;
+        link.download = 'custom-qr-card.' + format;
+        link.click();
+      }
+
+      function downloadPDF() {
+        var imgData = canvas.toDataURL('image/png');
+        var pdf = new window.jspdf.jsPDF();
+        var width = pdf.internal.pageSize.getWidth();
+        var height = pdf.internal.pageSize.getHeight();
+
+        pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+        pdf.save('custom-qr-card.pdf');
+      }
     });
-    
-</script>
-{% endblock %}
+  </script>
+</body>
+</html>
